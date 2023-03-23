@@ -11,6 +11,8 @@ Các bước chạy dự án
 
 - Chạy lệnh npm install ở cửa sổ back-end 
 
+- Chạy lệnh docker compose exec physic-test-api sh
+
 - Chạy lệnh npx nodemon ở cửa sổ  back-end
 
 - Chạy lệnh yarn ở cửa sổ front-end
