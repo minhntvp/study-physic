@@ -1,0 +1,114 @@
+<template lang="pug">
+.login
+  Stack(distribution="center")
+    .login-form
+      Card.mt-5.p-2(sectioned)
+        template(#title) Chào mừng bạn đến với Web học Vật Lý lớp 12
+        Stack(vertical distribution="center" spacing="base" v-if="isLogin")
+          TextField(v-model="userInput.email" type="email")
+            template(#label) Email (Tên đăng nhập)
+          TextField(v-model="userInput.password", :type="inputType")
+            template(#label) Mật khẩu
+            template(#suffix)
+              Stack.pt-1(alignment="center")
+                Button(plain :icon="ViewMajor" @click="isHiddenPassword = !isHiddenPassword")
+          Stack(v-if="isLoginError" distribution="center")
+            TextStyle(variation="negative") Tên đăng nhập hoặc mật khảu chưa chính xác
+          Stack(distribution="center" alignment="center")
+            Button(primary @click="handleLogin") Đăng nhập
+            Button(secondary @click="isLogin = false") Đăng ký tại đây
+        Stack(vertical distribution="center" spacing="base" v-else)
+          TextField(v-model="userInput.email")
+            template(#label) Email (Tên đăng nhập)
+          TextField(v-model="userInput.name")
+            template(#label) Tên học sinh
+          TextField(v-model="userInput.address")
+            template(#label) Địa chỉ
+          TextField(v-model="userInput.phone")
+            template(#label) SĐT
+          //- TextField(v-model="userInput.averatePoint")
+          //-   template(#label) Điêm trung bình hiện tại
+          TextField(v-model="userInput.password" type="password")
+            template(#label) Mật khẩu
+          TextField(v-model="userInput.confirmPassword" type="password")
+            template(#label) Xác nhận mật khẩu
+          Stack(v-if="userInput.password !== userInput.confirmPassword" distribution="center")
+            TextStyle(variation="negative") Xác nhận mật khẩu chưa chính xác
+          Stack(v-if="isLoginError" distribution="center")
+            TextStyle(variation="negative") Email đã được sử dụng
+          Stack(distribution="center" inlineAligment="center")
+            Button(primary @click="handleRegister") Đăng ký
+            Button(secondary @click="isLogin = true") Đăng nhập tại đây
+
+</template>
+
+<script setup lang="ts">
+import { ref, computed, inject } from 'vue';
+import { useAuthStore } from '@/stores';
+import ViewMajor from '@icons/ViewMajor.svg?component';
+import router from '@/router';
+const axios: any = inject('axios');
+
+const { setuseAuthStore } = useAuthStore();
+const userInput = ref({
+  email: '',
+  password: '',
+  confirmPassword: '',
+  name: '',
+  address: '',
+  phone: '',
+  averatePoint: '',
+  role: 'user'
+});
+
+
+const isLogin = ref<boolean>(true);
+const isLoginError = ref<boolean>(false);
+const isHiddenPassword = ref<boolean>(true);
+
+const inputType = computed(() => isHiddenPassword.value ? "password" : "text")
+const handleLogin = () => {
+  axios.post('auth/login', {
+    email: userInput.value.email,
+    password: userInput.value.password,
+  })
+    .then(async (res: any) => {
+      await localStorage.setItem('session_token', res.token);
+      setuseAuthStore(res.token);
+      axios.defaults.headers.common.Authorization = `Bearer ${res.token}`;
+      router.push({ name: 'dashboard'});
+    })
+    .catch(() => {
+      isLoginError.value = true;
+      setTimeout(() => isLoginError.value = false, 5000);
+    });
+}
+
+const handleRegister = () => {
+  const { email, password, name, address, phone, role } = userInput.value;
+  axios.post('auth/sign-up', {
+    email, password, name, address, phone, role
+  })
+    .then((res: any) => {
+      isLogin.value = true;
+      alert('Đăng ký thành công');
+    })
+    .catch(() => {
+      isLogin.value = false;
+      isLoginError.value = true;
+    });
+}
+
+</script>
+<style scoped lang="scss">
+.login {
+  height: 1000px;
+  wedth: 800px;
+  background-color: #cccccc;
+  background-image: url('https://apecceosummit2017.com.vn/wp-content/uploads/2019/10/hinh-nen-dep-powerpoint-4.png');
+  .login-form {
+    width: 500px;
+    height: 500px;
+}
+}
+</style>
