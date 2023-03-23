@@ -1,4 +1,4 @@
-# learn-physic
+# study-physic
 Các bước chạy dự án
 
 - Cài đặt Docker để tạo môi trường ảo chạy backend
